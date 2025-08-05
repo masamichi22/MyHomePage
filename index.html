@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masamichi Yoshida's website</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+        .profile-image {
+		width: 120px;
+		height: 120px;
+		border-radius: 50%;
+		object-fit: cover;
+		margin-bottom: 20px;
+		display: block;
+		margin-left: auto;
+		margin-right: auto;
+		}
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+        .info-item {
+            margin-top: 20px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            display: block;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 1em;
+            color: #777;
+        }
+        .info-value a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .info-value a:hover {
+            text-decoration: underline;
+        }
+        .other-text {
+            margin-top: 30px;
+            text-align: left;
+            padding-top: 20px;
+            border-top: 1px dashed #ccc;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <img src="image.jpg" alt="Profile image"class="profile-image">
+    <h1>Profile</h1>
+    
+    <div class="info-item">
+        <span class="info-label">Name</span>
+        <span class="info-value">Masamichi Yoshida</span>
+    </div>
+    
+    <div class="info-item">
+        <span class="info-label">Mail</span>
+        <span class="info-value">For security reasons, we are temporarily closed...<a href=""></a></span>
+    </div>
+    
+    <div class="info-item other-text">
+        <span class="info-label">Detail</span>
+        <p class="info-value">
+            Thank you for accessing this page! This page is an introduction of myself.<br>
+            I live in Tokyo. I'm a student of computer science and related fields.<br>
+            I'm interested in science(including mathematics, physics and computer science), mountain climbing and travel.<br>
+            I like coffee, ramen, sushi.<br>
+            I can use Japanese and English.
+        </p>
+    </div>
+</div>
+
+</body>
+</html>
