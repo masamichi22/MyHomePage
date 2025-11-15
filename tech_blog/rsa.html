@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <link href="http://fonts.googleapis.com/earlyaccess/notosansjp.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?lang=css&skin=default"></script>
+    <title>Masa's tech blog</title>
+    <style>
+        body {
+            font-family: "Noto Sans JP", sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            font-size: 2.0em;
+            margin-bottom: 5px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+            display: inline-block;
+        }
+        .info-item {
+            margin-top: 2px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            display: block;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 1em;
+            color: #777;
+        }
+        .info-value a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .info-value a:hover {
+            text-decoration: underline;
+        }
+        .other-text {
+            margin-top: 10px;
+            text-align: left;
+            padding-top: 20px;
+            border-top: 1px dashed #ccc;
+        }
+        .prettyprint ol.linenums > li {
+        list-style-type: decimal; 
+        }
+    .container, .container *:not(pre):not(code) {
+        color: #333;
+    }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Masa's tech blog</h1>
+    
+    <div class="info-item other-text">
+        <span class="info-label">RSA暗号をCで実装する</span>
+        <p class="info-value">
+        <br>現代の暗号理論論において最も有名かつ活用されている暗号にRSA暗号があります．RSAは開発者のRivest-Shamir-Adlemanの頭文字です．RSA暗号は現在の電子商取引や電子署名，クラウドサービスといった様々な分野で用いられています．私たちが安心してネットショッピングができるのもRSA暗号のおかげなのです</br>
+        <br>RSA暗号は2つの巨大な素数の積を素因数分解することが困難であると信じられていることが安全性の根拠となっています．ここで「信じられている」という回りくどい言い方をしている理由は，RSA暗号の安全性と素因数分解の困難性が同値かどうかは今のところ不明だからです．
+        つまり，素因数分解が困難であれば必ずRSA暗号は安全だ！というわけではないのです．素因数分解を用いた攻撃方法以外にもRSA暗号を破る攻撃がいつの日か発見されるのかもしれません．そのときには世界中の人のクレジットカード情報が悪用されてしまうのでしょうか．．．</br>
+        <br>それはわかりません．さて，RSA暗号は以下のような手順で暗号化され，それを復号できます．まず使う記号を定義します．メッセージ（暗号理論では平文，「ひらぶん」と呼ぶ）を\(m\)とし，2つの素数を\(p,q\)とします．ここで，
+            \[N = pq\]
+            \[a = (p-1)(q-1)\]
+            とし，
+            \[\gcd(a,e) = 1\]
+            \[ed\equiv 1\pmod a\]
+            となる\(e,d\)を適当に定めます．\(e\)はつまり，\((p-1)(q-1)\)と互いに素な整数のことです．\(e,d\)の計算にはユークリッド互除法を用いるのが良いでしょう．ここまでで暗号化および復号の準備が整いました．
+    </br>
+    <br>
+    次に公開鍵を\((N,e)\)とし秘密鍵を\(d\)としてメッセージの受信者は秘密鍵を保持し，公開鍵をメッセージの送信者に与えます．公開鍵は文字通り公開されるので攻撃者が知っても問題ありません．
+    メッセージ送信者はメッセージを暗号文\(c\)に変換します．以下のように計算します．
+            \[c = m^e\pmod N\]
+    
+    メッセージ受信者は以下のように暗号文を平文に復号します．復号後の文を\(m'\)とすると
+            \[m' = c^d\pmod N\]
+    となり，\(m' = m\)となるため解読成功です．なお，メッセージ\(m\)は\(m=\{0, 1,...,N-1\}\)の範囲にする必要があります．したがって長いメッセージをRSA暗号で暗号化したい場合は，大きな素数を用意する必要があります．
+    </br>
+    <br>
+    ここまでで，RSA暗号の数学的理論を解説しました．実際に適当な数値を決めて計算してみましょう．
+    実用とは程遠いですが，\(p=3, q=5, N=pq=15,a=8,m=2,e=3,d=3としたとき，\)
+    \[c = 2^3\pmod{15}=8\]
+    \[m' = 8^3\pmod{15}=2=m\]
+    となります．このようなプロセスを用いて暗号化され，復号できるのです．
+    では，これをプログラミングで実行し，コンピュータ上でRSA暗号の簡易的なシステムを作成しましょう．
+    </br>
+    <br>
+    今回はC言語で実装してみましょう．以下にソースコード(toy_rsa.c)を示します．ソースコードを見ると分かるように，2つの数の最大公約数を求める関数gcd()，\(e\)を求める関数get_e()，\(d\)を求める関数get_d()を自作関数として定義しています．ただし，扱える桁数には限りがあるため大きな素数は扱えません．\(N=39\)くらいが限度です．
+    大きい素数にも対応させたければ，int型ではなくlong long型を使うと良いでしょう．
+
+    <pre class="prettyprint lang-html linenums">
+/* This program is used for RSA cryptosystem(very small version). */
+/* User set prime number p and q 0 < p,q < 1000 */
+/* User set message m (0 <= m <= p*q-1) */
+#include <stdio.h>
+#include <math.h>
+
+int gcd(int a, int b){
+	int x;
+	while(b != 0){
+		x = a % b;
+		a = b;
+		b = x;
+	}
+	return a;
+}
+int get_e(int a){ /* a=(p-1)*(q-1) */
+	int i;
+	
+	for(i=2; i<=a; i++){
+		if(gcd(a, i) == 1){
+			return i;
+		}
+	}
+	return -1;
+}
+int get_d(int e, int a){
+	int j;
+	
+	for(j=1; j<=a; j++){
+		if(e*j % a == 1){
+			return j;
+		}
+	}
+	return -1;
+}
+int main(void){
+	int m, c, n, p=5, q=7, e, d, a, m_after;
+	
+	n = p * q;
+	a = (p - 1) * (q - 1);
+	
+	printf("Please input message\n");
+	scanf("%d", &m);
+	e = get_e(a);
+	c = (int)pow(m, e) % n; /* encryption */
+	printf("encrypted message : %d\n", c);
+	
+	d = get_d(e, a);
+	m_after = (int)pow(c, d) % n; /* decryption */
+	printf("decrypted message : %d\n", m_after);
+	printf("original message : %d\n", m);
+	
+	return 0;
+}
+    </pre>
+    このコードをgccでコンパイルし，試しに\(m=30\)として実行すると以下のような結果となります．
+    <pre class="prettyprint lang-html linenums">
+    gcc toy_rsa.c -o toy_rsa.exe
+    ./toy_rsa
+    Please input message
+    30
+    encrypted message : 25
+    decrypted message : 30
+    original message : 30
+    </pre>
+    C言語の開発環境をお持ちの方はいろいろな数を組み合わせて実行してみてはいかがでしょか？
+    なお，上記コードにおいて標準入力scanf()で素数をユーザに入力してもらうこともできますが素数以外の数を誤って入力した際の処理がややこしくなる（素数判定プログラムを用意する必要がある）のでコード内で素数を指定する形式をとっています．</br>
+    <br>
+    今回はRSA暗号について解説をしましたが，RSA暗号に関わる技術は他にもたくさんあります．暗号理論は代数学という数学の分野が基盤となっており，理解するのが大変ですが現代の情報セキュリティにおいてなくてはならない存在です．
+    興味のある方はいろいろ調査してみましょう．
+    </br>
+    </p>
+    </div>
+</div>
+</body>
+</html>
