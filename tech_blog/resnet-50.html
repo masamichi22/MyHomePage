@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <link href="https://fonts.googleapis.com/earlyaccess/notosansjp.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js?lang=css&skin=default"></script>
+    <title>ResNet-50</title>
+
+    <style>
+        body {
+            font-family: "Noto Sans JP", sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+    		justify-content: center;
+    		align-items: center;
+    		min-height: 100vh;
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            width: 100%;
+			margin:0 auto;
+            text-align: left;
+        }
+        @media(max-width: 768px){
+        	.container{
+        		padding: 20px 15px;
+        		border-radius: 8px;
+        	}
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.0em;
+            margin-bottom: 5px;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+            display: inline-block;
+        }
+
+        .info-item {
+            margin-top: 2px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #555;
+            display: block;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 1em;
+            color: #777;
+        }
+
+        .info-value a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .info-value a:hover {
+            text-decoration: underline;
+        }
+
+        .other-text {
+            margin-top: 10px;
+            text-align: left;
+            padding-top: 20px;
+            border-top: 1px dashed #ccc;
+        }
+
+        .prettyprint ol.linenums > li {
+            list-style-type: decimal;
+            width: 230%;
+        }
+
+        .container, .container *:not(pre):not(code) {
+            color: #333;
+            
+        }
+        pre {
+            background: #f7f7f7;
+            padding: 1em;
+            border-radius: 8px;
+            overflow-x: auto;
+            white-space: pre;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        code {
+            font-family: Consolas, monospace;
+        }
+    </style>
+</head>
+<body>
+
+
+<div class="container">
+    <h1>Masa's tech blog</h1>
+    
+    <div class="info-item other-text">
+        <span class="info-label">ResNet-50を使った画像分類</span>
+        <p class="info-value">
+        <br>
+        今回は有名な事前学習済みモデルのResNet-50を使ってインターネット上の画像を分類します．
+        事前学習済みモデルとは，すでに大量のデータを用いた学習が完了し，簡単に使える状態になっている深層学習モデルのことです．
+        事前学習済みモデルを有効活用することで，0からモデルを構築する必要が無く，手軽に深層学習モデル（平たく言うとAI）の性能を試すことができます．
+        一方で，完全にオリジナルのモデルを作成する場合には，データの用意・前処理・モデルの設計・学習・評価・ファインチューニングといったことを行う必要があり多くの計算資源と時間が必要です．
+        </br>
+        <br>
+        ResNet-50は50層の畳み込みニューラルネットワーク(CNN, Convolutional Neural Network)が搭載されたモデルで，画像を対象とした様々なタスクで用いられています．
+        今回はPython(Jupyter Notebook)上でResNet-50を動かしてみましょう．
+        </br>
+        <br>
+        動作環境および使用するライブラリは以下の通りです．必要に応じてインストールしましょう．
+        <ul>
+        <li>Python3</li>
+        <li>Jupyter Notebook (or Google Colab)</li>
+        <li>PyTorch</li>
+        <li>PIL</li>
+        </ul>
+        </br>
+        <br>
+        ではさっそくコードを記載します．まずは必要なライブラリ等を定義します．
+        <pre class="prettyprint lang-html linenums">
+# prepare library
+import json
+from pathlib import Path
+
+import numpy as np
+import torch
+import torchvision
+import requests
+from PIL import Image
+from io import BytesIO
+from torch.nn import functional as F
+from torch.utils.data import DataLoader, Dataset
+from torchvision import transforms
+from torchvision.datasets.utils import download_url
+        </pre>
+        次に分類したい画像をインターネット上から取得します．今回は例として適当な飛行機の画像を入れています．
+        <pre class="prettyprint lang-html linenums">
+img_url = requests.get("https://assets.hus.ac.jp/hokukadai-jiten/assets/2023/files/06-01.webp")
+        </pre>
+        次にResNet-50のモデルを定義します．このコードが今回のタスクの主要部です．
+        <pre class="prettyprint lang-html linenums">
+device = torch.device("cpu")
+# prepare model (ResNet-50)
+model = torchvision.models.resnet50(pretrained=True).to(device)
+# deta transform
+transform = transforms.Compose(
+    [
+        transforms.Resize(256),
+        transforms.CenterCrop(224),
+        transforms.Lambda(lambda x: x.convert('RGB')), 
+        transforms.ToTensor(),
+        transforms.Normalize(
+            mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225] # PyTorchのリファレンスにこの値が良いと書いてある
+        ),
+    ]
+)
+
+img = Image.open(BytesIO(img_url.content)).convert("RGB") # 画像URLから画像を読み込む
+inputs = transform(img)
+inputs = inputs.unsqueeze(0).to(device)
+
+model.eval()
+outputs = model(inputs)
+
+batch_probs = F.softmax(outputs, dim=1) # softmax関数を利用し出力を確率値に変換
+batch_probs, batch_indices = batch_probs.sort(dim=1, descending=True) # 確率の高いものから順に並べ替え
+
+def get_classes(): # 分類対象オブジェクトのクラス一覧を得る
+    if not Path("data/imagenet_class_index.json").exists():
+        download_url("https://git.io/JebAs", "data", "imagenet_class_index.json")
+
+    with open("data/imagenet_class_index.json", encoding='utf-8') as f:
+        data = json.load(f)
+        class_names = [x["ja"] for x in data]
+
+    return class_names
+
+class_names = get_classes()
+    </pre>
+    最後に分類結果を表示させましょう．
+    <pre class="prettyprint lang-html linenums">
+# 分類結果の表示
+for probs, indices in zip(batch_probs, batch_indices):
+    for k in range(3):
+        print(f"Top-{k + 1} {class_names[indices[k]]} {probs[k]:.2%}")
+    </pre>
+    必要なコードは以上となります．ご自身の機器で動作確認をしてみてください．ちなみに，私の環境下で実行した際の例を以下の画像に示します．動作結果を見ると，指定された画像URLから画像を取得し，適切に分類できていることが分かります．事前学習済みモデルを用いて画像分類をすることができました．
+    </br>
+    <br>
+    <a href="https://assets.hus.ac.jp/hokukadai-jiten/assets/2023/files/06-01.webp">動作確認に用いた航空機の画像</a>
+    </br>
+    <br>
+    <img src="img_resnet/resnet_example.png">
+    <br>
+    <br>
+    本記事では，事前学習済みモデルのResNet-50を用いた画像分類の手法を取り上げました．ResNet-50以外にも様々な事前学習済みモデルが公開されており，同様の手順で利用することができます．例えば，画像分類タスクではVGG-16があります．とはいえ，事前学習済みモデルを使わずに，フルスクラッチでモデルを作成することにも大きな意義（自身の技術力向上を図れる・フルスクラッチでモデルを作ることができたという達成感など）があります．それで，フルスクラッチでモデルを作成してみるのもおすすめです．計算性能の高いコンピュータ，GPUが必要ですが．．．（私も欲しいです）
+    </br>
+    </p>
+    </div>
+</div>
+</body>
+</html>
